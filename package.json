@@ -4,31 +4,31 @@
     "typescript": "^4.9.4",
     "ts-node": "^10.9.1"
   },
-  "name": "cfbypass",
+  "name": "cloudscraper.js",
   "description": "Python based CloudFlare bypass. Utilizes [VeNoMouS's CloudScraper](https://github.com/VeNoMouS/cloudscraper) project to bypass CloudFlare. All credit goes to him.",
-  "version": "0.0.14",
-  "main": "./built/CF.js",
+  "version": "0.0.1",
+  "main": "./built/cloudscraper-js.js",
   "scripts": {
     "test": "node test.js",
     "build": "npm run build:ts",
     "build:ts": "tsc --build",
-    "clean": "tsc --build --clean"
+    "clean": "tsc --build --clean && rm -rf built"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Eltik/CFBypass.git"
+    "url": "git+ithub.com/maarkN/cloudscraper.js.git"
   },
   "keywords": [
     "cloudflare",
     "request",
     "bypass"
   ],
-  "author": "eltik",
+  "author": "maarkN <markimkr@gmail.com>",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/Eltik/CFBypass/issues"
+    "url": "https://github.com/maarkN/cloudscraper.js/issues"
   },
-  "homepage": "https://github.com/Eltik/CFBypass#readme",
+  "homepage": "https://github.com/maarkN/cloudscraper.js#readme",
   "dependencies": {
     "cheerio": "^1.0.0-rc.12",
     "js-base64": "^3.7.3"
