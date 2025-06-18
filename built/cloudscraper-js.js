@@ -22,11 +22,11 @@ class CloudScraper {
     async get(url, options = {}) {
         options = {
             ...options,
-            method: "GET"
+            method: "GET",
         };
         const request = {
             url,
-            options
+            options,
         };
         const response = await this.request(request);
         return response;
@@ -35,11 +35,11 @@ class CloudScraper {
     async post(url, options = {}) {
         options = {
             ...options,
-            method: "POST"
+            method: "POST",
         };
         const request = {
             url,
-            options
+            options,
         };
         const response = await this.request(request);
         return response;
@@ -48,11 +48,11 @@ class CloudScraper {
     async cookie(url, options = {}) {
         options = {
             ...options,
-            method: "COOKIE"
+            method: "COOKIE",
         };
         const request = {
             url,
-            options
+            options,
         };
         const response = await this.request(request);
         return response;
@@ -61,11 +61,11 @@ class CloudScraper {
     async tokens(url, options = {}) {
         options = {
             ...options,
-            method: "TOKENS"
+            method: "TOKENS",
         };
         const request = {
             url,
-            options
+            options,
         };
         const response = await this.request(request);
         return response;
@@ -100,73 +100,93 @@ class CloudScraper {
             if (request.options.timeout) {
                 args.push("--timeout", String(request.options.timeout));
             }
-            const result = [];
+            if (request.options.buffer) {
+                args.push("--buffer");
+            }
+            const results = [];
+            let base64Result = "";
             const childProcess = (0, child_process_1.spawn)(this.isPython3 ? "python3" : "python", args);
-            childProcess.stdout.setEncoding("utf8");
+            if (!request.options.buffer) {
+                childProcess.stdout.setEncoding("utf8");
+            }
             childProcess.stdout.on("data", (data) => {
-                const dataString = String(data).split("\n");
-                if (dataString.length < 3) {
-                    return result.push({ data });
+                if (request.options.buffer) {
+                    base64Result += data.toString();
                 }
-                const body = dataString[0];
-                let statusCode = dataString[1];
-                let headers = dataString[2];
-                try {
-                    statusCode = JSON.parse(statusCode);
-                    statusCode = statusCode.statusCode;
-                }
-                catch (e) {
-                    statusCode = statusCode;
-                }
-                try {
-                    headers = JSON.parse(headers);
-                    let temp = headers.responseHeaders;
-                    headers = (0, js_base64_1.decode)(temp.substring(2).substring(0, temp.length - 1));
+                else {
+                    const dataString = String(data).split("\n");
+                    if (dataString.length < 3) {
+                        return results.push({ data });
+                    }
+                    const body = dataString[0];
+                    let statusCode = dataString[1];
+                    let headers = dataString[2];
                     try {
-                        headers = JSON.parse(headers);
+                        statusCode = JSON.parse(statusCode);
+                        statusCode = statusCode
+                            .statusCode;
                     }
                     catch (e) {
-                        console.error(e);
+                        statusCode = statusCode;
+                    }
+                    try {
+                        headers = JSON.parse(headers);
+                        let temp = headers
+                            .responseHeaders;
+                        headers = (0, js_base64_1.decode)(temp.substring(2).substring(0, temp.length - 1));
+                        try {
+                            headers = JSON.parse(headers);
+                        }
+                        catch (e) {
+                            console.error(e);
+                            headers = headers;
+                        }
+                    }
+                    catch (e) {
                         headers = headers;
                     }
+                    results.push({
+                        data: body,
+                        status: Number(statusCode),
+                        headers: headers,
+                    });
                 }
-                catch (e) {
-                    headers = headers;
-                }
-                result.push({
-                    "data": body,
-                    "status": Number(statusCode),
-                    "headers": headers
-                });
             });
-            childProcess.stderr.setEncoding('utf8');
+            childProcess.stderr.setEncoding("utf8");
             childProcess.stderr.on("data", (err) => {
                 err = String(err).trim();
                 err = err.replaceAll("\n", " ");
-                result.push({
-                    "error": String(err).trim()
+                results.push({
+                    error: String(err).trim(),
                 });
             });
-            childProcess.on('exit', () => {
+            childProcess.on("exit", () => {
+                const isBuffer = request.options.buffer;
                 let data = "";
                 let statusCode = 200;
                 let headers = "";
+                const dataBuffers = [];
                 const errors = [];
-                for (let i = 0; i < result.length; i++) {
-                    if (result[i].error) {
-                        errors.push(result[i]);
+                for (const result of results) {
+                    if (result.error) {
+                        errors.push(result);
                     }
-                    if (result[i].data) {
-                        data += result[i].data;
+                    if (isBuffer && result.raw) {
+                        dataBuffers.push(result.raw);
                     }
-                    if (result[i].status) {
-                        statusCode = result[i].status;
+                    if (result.data) {
+                        data += result.data;
                     }
-                    if (result[i].headers) {
-                        headers = result[i].headers;
+                    if (result.status) {
+                        statusCode = result.status;
+                    }
+                    if (result.headers) {
+                        headers = result.headers;
                     }
                 }
-                data = (0, js_base64_1.decode)(data.substring(2).substring(0, data.length - 1));
+                if (!isBuffer) {
+                    data = (0, js_base64_1.decode)(data.substring(2).substring(0, data.length - 1));
+                }
                 if (errors.length > 0) {
                     reject({
                         status: 500,
@@ -174,7 +194,7 @@ class CloudScraper {
                         headers: headers,
                         error: errors,
                         text: () => data,
-                        json: () => JSON.parse(data)
+                        json: () => JSON.parse(data),
                     });
                 }
                 else {
@@ -183,9 +203,11 @@ class CloudScraper {
                         statusText: "OK",
                         headers: headers,
                         error: errors,
-                        text: () => data,
-                        json: () => JSON.parse(data),
-                        buffer: () => Buffer.from(data),
+                        text: () => (isBuffer ? "[binary buffer]" : data),
+                        json: () => (isBuffer ? undefined : JSON.parse(data)),
+                        buffer: () => isBuffer
+                            ? Buffer.from(base64Result, "base64")
+                            : Buffer.from(data),
                     });
                 }
             });
@@ -194,30 +216,33 @@ class CloudScraper {
     // @param token: string
     async solveCaptcha3(url, key, anchorLink) {
         const uri = new URL(url);
-        const domain = uri.protocol + '//' + uri.host;
+        const domain = uri.protocol + "//" + uri.host;
         const keyReq = await this.get(`https://www.google.com/recaptcha/api.js?render=${key}`, {
             headers: {
                 Referer: domain,
             },
         });
         const data = keyReq.text();
-        const v = data.substring(data.indexOf('/releases/'), data.lastIndexOf('/recaptcha')).split('/releases/')[1];
+        const v = data
+            .substring(data.indexOf("/releases/"), data.lastIndexOf("/recaptcha"))
+            .split("/releases/")[1];
         // ANCHOR IS SPECIFIC TO SITE
-        const curK = anchorLink.split('k=')[1].split('&')[0];
+        const curK = anchorLink.split("k=")[1].split("&")[0];
         const curV = anchorLink.split("v=")[1].split("&")[0];
         const anchor = anchorLink.replace(curK, key).replace(curV, v);
         const req = await this.get(anchor);
         const $ = (0, cheerio_1.load)(req.text());
-        const reCaptchaToken = $('input[id="recaptcha-token"]').attr('value');
+        const reCaptchaToken = $('input[id="recaptcha-token"]').attr("value");
         if (!reCaptchaToken)
-            throw new Error('reCaptcha token not found');
+            throw new Error("reCaptcha token not found");
         return reCaptchaToken;
     }
     async solveCaptcha3FromHTML(url, html, anchorLink) {
         const $ = (0, cheerio_1.load)(html);
         let captcha = null;
         $("script").map((index, element) => {
-            if ($(element).attr("src") != undefined && $(element).attr("src").includes("/recaptcha/")) {
+            if ($(element).attr("src") != undefined &&
+                $(element).attr("src").includes("/recaptcha/")) {
                 captcha = $(element).attr("src");
             }
         });
@@ -245,28 +270,26 @@ class CloudScraper {
             childProcess.stdout.on("data", (data) => {
                 console.log(data);
             });
-            childProcess.stderr.setEncoding('utf8');
+            childProcess.stderr.setEncoding("utf8");
             childProcess.stderr.on("data", (err) => {
                 reject(err);
             });
-            childProcess.on('exit', () => {
+            childProcess.on("exit", () => {
                 const childProcess = (0, child_process_1.spawn)(this.isPython3 ? "python3" : "python", args);
                 childProcess.stdout.setEncoding("utf8");
                 childProcess.stdout.on("data", (data) => {
                     console.log(data);
                 });
-                childProcess.stderr.setEncoding('utf8');
+                childProcess.stderr.setEncoding("utf8");
                 childProcess.stderr.on("data", (err) => {
                     reject(err);
                 });
-                childProcess.on('exit', () => {
+                childProcess.on("exit", () => {
                     resolve(true);
                 });
             });
         });
     }
 }
-;
-;
 exports.default = CloudScraper;
 //# sourceMappingURL=cloudscraper-js.js.map

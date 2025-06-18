@@ -6,13 +6,13 @@
   },
   "name": "cloudscraper.js",
   "description": "Python based CloudFlare bypass. Utilizes [VeNoMouS's CloudScraper](https://github.com/VeNoMouS/cloudscraper) project to bypass CloudFlare. All credit goes to him.",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "main": "./built/cloudscraper-js.js",
   "scripts": {
     "test": "node test.js",
-    "build": "npm run build:ts",
+    "build": "rm -rf built && npm run build:ts",
     "build:ts": "tsc --build",
-    "clean": "tsc --build --clean && rm -rf built"
+    "clean": "rm -rf built && tsc --build --clean"
   },
   "repository": {
     "type": "git",

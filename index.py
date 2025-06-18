@@ -11,42 +11,47 @@ parser.add_argument("--data")
 parser.add_argument("--headers")
 parser.add_argument("--redirect")
 parser.add_argument("--timeout")
+parser.add_argument("--buffer", action="store_true")
 args = parser.parse_args()
 
 try:
     timeout = args.timeout if args.timeout else 10
     redirect = args.redirect if args.redirect else True
+    buffer = args.buffer
     if args.method == "GET":
         req = None
-        if args.headers != None:
+        if args.headers is not None:
             headers = json.loads(args.headers)
             req = cloudscraper.create_scraper().get(
                 args.url,
                 timeout=timeout,
                 headers=headers,
                 allow_redirects=redirect,
+                stream=buffer,
             )
         else:
             req = cloudscraper.create_scraper().get(
-                args.url, timeout=timeout, allow_redirects=redirect
+                args.url, timeout=timeout, allow_redirects=redirect, stream=buffer
             )
-        print(urlsafe_b64encode((req.text.encode("UTF-8"))))
+        if buffer:
+            import base64
+            import sys
 
-        statusCode = {"statusCode": req.status_code}
-
-        headersDict = dict(req.headers)
-        encoded_headers = str(
-            urlsafe_b64encode(json.dumps(headersDict).encode("ascii"))
-        )
-
-        responseHeaders = {"responseHeaders": encoded_headers}
-
-        print(json.dumps(statusCode))
-        print(json.dumps(responseHeaders))
+            sys.stdout.buffer.write(base64.urlsafe_b64encode(req.content))
+        else:
+            print(urlsafe_b64encode((req.text.encode("UTF-8"))))
+            statusCode = {"statusCode": req.status_code}
+            headersDict = dict(req.headers)
+            encoded_headers = str(
+                urlsafe_b64encode(json.dumps(headersDict).encode("ascii"))
+            )
+            responseHeaders = {"responseHeaders": encoded_headers}
+            print(json.dumps(statusCode))
+            print(json.dumps(responseHeaders))
     elif args.method == "POST":
         json_data = json.loads(args.data)
         req = None
-        if args.headers != None:
+        if args.headers is not None:
             headers = json.loads(args.headers)
             req = cloudscraper.create_scraper().post(
                 args.url,
@@ -54,56 +59,71 @@ try:
                 timeout=timeout,
                 headers=headers,
                 allow_redirects=redirect,
+                stream=buffer,
             )
         else:
             req = cloudscraper.create_scraper().post(
-                args.url, data=json_data, timeout=timeout, allow_redirects=redirect
+                args.url,
+                data=json_data,
+                timeout=timeout,
+                allow_redirects=redirect,
+                stream=buffer,
             )
-        print(urlsafe_b64encode((req.text.encode("UTF-8"))))
+        if buffer:
+            import base64
+            import sys
 
-        statusCode = {"statusCode": req.status_code}
-
-        headersDict = dict(req.headers)
-        encoded_headers = str(
-            urlsafe_b64encode(json.dumps(headersDict).encode("ascii"))
-        )
-
-        responseHeaders = {"responseHeaders": encoded_headers}
-
-        print(json.dumps(statusCode))
-        print(json.dumps(responseHeaders))
+            sys.stdout.buffer.write(base64.urlsafe_b64encode(req.content))
+        else:
+            print(urlsafe_b64encode((req.text.encode("UTF-8"))))
+            statusCode = {"statusCode": req.status_code}
+            headersDict = dict(req.headers)
+            encoded_headers = str(
+                urlsafe_b64encode(json.dumps(headersDict).encode("ascii"))
+            )
+            responseHeaders = {"responseHeaders": encoded_headers}
+            print(json.dumps(statusCode))
+            print(json.dumps(responseHeaders))
     elif args.method == "COOKIE":
         print(cloudscraper.get_cookie_string(args.url))
     elif args.method == "TOKENS":
         print(cloudscraper.get_tokens(args.url))
     else:
         req = None
-        if args.headers != None:
+        if args.headers is not None:
             headers = json.loads(args.headers)
             req = cloudscraper.create_scraper().get(
                 args.url,
                 timeout=timeout,
                 headers=headers,
                 allow_redirects=redirect,
+                stream=buffer,
             )
         else:
             req = cloudscraper.create_scraper().get(
-                args.url, timeout=timeout, allow_redirects=redirect
+                args.url, timeout=timeout, allow_redirects=redirect, stream=buffer
             )
-        print(urlsafe_b64encode((req.text.encode("UTF-8"))))
+        if buffer:
+            import base64
+            import sys
 
-        statusCode = {"statusCode": req.status_code}
-
-        headersDict = dict(req.headers)
-        encoded_headers = str(
-            urlsafe_b64encode(json.dumps(headersDict).encode("ascii"))
-        )
-
-        responseHeaders = {"responseHeaders": encoded_headers}
-
-        print(json.dumps(statusCode))
-        print(json.dumps(responseHeaders))
-except:
+            sys.stdout.buffer.write(base64.urlsafe_b64encode(req.content))
+        else:
+            print(urlsafe_b64encode((req.text.encode("UTF-8"))))
+            statusCode = {"statusCode": req.status_code}
+            headersDict = dict(req.headers)
+            encoded_headers = str(
+                urlsafe_b64encode(json.dumps(headersDict).encode("ascii"))
+            )
+            responseHeaders = {"responseHeaders": encoded_headers}
+            print(json.dumps(statusCode))
+            print(json.dumps(responseHeaders))
+except Exception as e:
     raise Exception(
-        "Could not send data to " + args.url + " with request data " + args.data + "."
+        "Could not send data to "
+        + args.url
+        + " with request data "
+        + str(args.data)
+        + ". Error: "
+        + str(e)
     )

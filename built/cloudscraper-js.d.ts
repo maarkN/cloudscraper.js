@@ -31,14 +31,14 @@ type Options = {
     timeout?: number;
 };
 type Method = {
-    "GET": string;
-    "POST": string;
-    "COOKIE": string;
-    "TOKENS": string;
-    "PUT": string;
-    "DELETE": string;
-    "PATCH": string;
-    "HEAD": string;
+    GET: string;
+    POST: string;
+    COOKIE: string;
+    TOKENS: string;
+    PUT: string;
+    DELETE: string;
+    PATCH: string;
+    HEAD: string;
 };
 interface Response<T = Record<string, unknown>> {
     status: number;
