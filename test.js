@@ -5,7 +5,7 @@ const scraper = new Scraper({
   timeout: 30,
 });
 const id =
-  "eyJhbGciOiJIUzUxMiJ9.eyJqdGkiOiIyNDU4NDQ5OCIsIm5iZiI6MTc1MDIzMTkzMCwiZXhwIjoxNzUwMjMyMjMwfQ.zMWOeWYXs0YZXHxH2OwFIcbWDe4vFFfk1NV1ezemY2sdPUXNeEm0XS5NcJ27Gt-ybDwFzmYhVtHCtDN2DLgFIw";
+  "eyJhbGciOiJIUzUxMiJ9.eyJqdGkiOiIxNTg3NDA1OSIsIm5iZiI6MTc1MDMxMDIzMCwiZXhwIjoxNzUwMzEwNTMwfQ.BHQAQQC73XZ8EN74sKMI1y9EJ63A0aDrgixn3fbBsuw7mleS9HFHufPaP_4hkHmVFrKNrF2xj7mS3wwHf2FAKg";
 scraper
   .request({
     url: `https://consultas.anvisa.gov.br/api/consulta/medicamentos/arquivo/bula/parecer/${id}/?Authorization=`,

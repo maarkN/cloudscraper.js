@@ -8,9 +8,11 @@ Python based CloudFlare bypass. Utilizes [VeNoMouS&#39;s CloudScraper](https://g
 
 ## Installation
 
-THIS NEEDS TO BE UPDATED`<br />`
-`<b>`Prerequisites`</b>`: Python (version 3.10 or higher) and NodeJS (comes with NPM).`<br /><br />`
-Installation is simple. Just run `pip install cloudscraper` or `pip3 install cloudscraper`. Then, run `npm i cloudscraper.js`. Here is an example for using this package in your own project:
+**_THIS NEEDS TO BE UPDATED_**
+Prerequisites: Python (version 3.10 or higher) and NodeJS (comes with NPM).
+
+Installation is simple. Just run `pip install cloudscraper` or `pip3 install cloudscraper`.
+Then, run `npm i cloudscraper.js`. Here is an example for using this package in your own project:
 
 ```javascript
 // ES6

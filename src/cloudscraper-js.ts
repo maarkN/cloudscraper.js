@@ -5,10 +5,12 @@ import { join } from "path";
 
 class CloudScraper {
   private isPython3: boolean;
+  private timeoutInSeconds: number;
 
   // If you are using Python 3, set this to true
   constructor(options: CloudScraperOptions = {}) {
     this.isPython3 = options.usePython3 ?? false;
+    this.timeoutInSeconds = options.timeoutInSeconds ?? 10;
     this.get = this.get.bind(this);
     this.post = this.post.bind(this);
     this.cookie = this.cookie.bind(this);
@@ -124,20 +126,21 @@ class CloudScraper {
   public async request<T>(request: Request): Promise<Response<T>> {
     return new Promise((resolve, reject) => {
       const args: string[] = [join(__dirname, "../index.py")];
+      const timeout = request.options.timeoutInSeconds ?? this.timeoutInSeconds;
       args.push("--url", request.url);
       args.push("--redirect", request.options.redirect ? "true" : "false");
+      args.push("--timeout", String(timeout));
 
       if (request.options.method) {
         args.push("--method", String(request.options.method));
       }
+
       if (request.options.headers) {
         args.push("--headers", JSON.stringify(request.options.headers));
       }
+
       if (request.options.body) {
         args.push("--data", JSON.stringify(request.options.body));
-      }
-      if (request.options.timeout) {
-        args.push("--timeout", String(request.options.timeout));
       }
 
       if (request.options.buffer) {
@@ -390,7 +393,7 @@ class CloudScraper {
 }
 
 type CloudScraperOptions = {
-  timeout?: number;
+  timeoutInSeconds?: number;
   usePython3?: boolean;
 };
 
@@ -400,7 +403,7 @@ type Options = {
   body?: string;
   redirect?: boolean;
   buffer?: boolean;
-  timeout?: number;
+  timeoutInSeconds?: number;
 };
 
 type Method = {

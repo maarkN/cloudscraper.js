@@ -1,6 +1,7 @@
 /// <reference types="node" />
 declare class CloudScraper {
     private isPython3;
+    private timeoutInSeconds;
     constructor(options?: CloudScraperOptions);
     get<T>(url: string, options?: Options): Promise<Response<T>>;
     post<T>(url: string, options?: Options): Promise<Response<T>>;
@@ -17,7 +18,7 @@ declare class CloudScraper {
     install(): Promise<unknown>;
 }
 type CloudScraperOptions = {
-    timeout?: number;
+    timeoutInSeconds?: number;
     usePython3?: boolean;
 };
 type Options = {
@@ -28,7 +29,7 @@ type Options = {
     body?: string;
     redirect?: boolean;
     buffer?: boolean;
-    timeout?: number;
+    timeoutInSeconds?: number;
 };
 type Method = {
     GET: string;

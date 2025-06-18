@@ -15,9 +15,9 @@ parser.add_argument("--buffer", action="store_true")
 args = parser.parse_args()
 
 try:
-    timeout = args.timeout if args.timeout else 10
+    timeout = int(args.timeout) if args.timeout else 30
     redirect = args.redirect if args.redirect else True
-    buffer = args.buffer
+    is_buffer_request = args.buffer
     if args.method == "GET":
         req = None
         if args.headers is not None:
@@ -27,13 +27,16 @@ try:
                 timeout=timeout,
                 headers=headers,
                 allow_redirects=redirect,
-                stream=buffer,
+                stream=is_buffer_request,
             )
         else:
             req = cloudscraper.create_scraper().get(
-                args.url, timeout=timeout, allow_redirects=redirect, stream=buffer
+                args.url,
+                timeout=timeout,
+                allow_redirects=redirect,
+                stream=is_buffer_request,
             )
-        if buffer:
+        if is_buffer_request:
             import base64
             import sys
 
@@ -59,7 +62,7 @@ try:
                 timeout=timeout,
                 headers=headers,
                 allow_redirects=redirect,
-                stream=buffer,
+                stream=is_buffer_request,
             )
         else:
             req = cloudscraper.create_scraper().post(
@@ -67,9 +70,9 @@ try:
                 data=json_data,
                 timeout=timeout,
                 allow_redirects=redirect,
-                stream=buffer,
+                stream=is_buffer_request,
             )
-        if buffer:
+        if is_buffer_request:
             import base64
             import sys
 
@@ -97,13 +100,16 @@ try:
                 timeout=timeout,
                 headers=headers,
                 allow_redirects=redirect,
-                stream=buffer,
+                stream=is_buffer_request,
             )
         else:
             req = cloudscraper.create_scraper().get(
-                args.url, timeout=timeout, allow_redirects=redirect, stream=buffer
+                args.url,
+                timeout=timeout,
+                allow_redirects=redirect,
+                stream=is_buffer_request,
             )
-        if buffer:
+        if is_buffer_request:
             import base64
             import sys
 
