@@ -187,12 +187,49 @@ class CloudScraper {
                 if (!isBuffer) {
                     data = (0, js_base64_1.decode)(data.substring(2).substring(0, data.length - 1));
                 }
-                if (errors.length > 0) {
+                // Check if base64Result contains JSON with error property when buffer is true
+                if (isBuffer && base64Result) {
+                    try {
+                        const decodedBuffer = Buffer.from(base64Result, "base64");
+                        const decodedString = decodedBuffer.toString("utf8");
+                        // Try to parse as JSON and check for error property
+                        try {
+                            const jsonData = JSON.parse(decodedString);
+                            if (jsonData && jsonData.error) {
+                                // Found JSON with error property, treat as error
+                                reject({
+                                    status: 500,
+                                    statusText: "ERROR",
+                                    headers: headers,
+                                    error: [
+                                        {
+                                            error: jsonData.error,
+                                            detail: jsonData.detail,
+                                            validations: jsonData.validations,
+                                        },
+                                    ],
+                                    text: () => decodedString,
+                                    json: () => jsonData,
+                                    buffer: () => decodedBuffer,
+                                });
+                                return;
+                            }
+                        }
+                        catch (jsonError) {
+                            // Not JSON or doesn't have error property, continue with normal processing
+                        }
+                    }
+                    catch (decodeError) {
+                        // Failed to decode base64, continue with normal processing
+                    }
+                }
+                if (errors.length > 0 || statusCode > 300) {
+                    console.log(`errors: ${errors}`);
                     reject({
                         status: 500,
                         statusText: "ERROR",
                         headers: headers,
-                        error: errors,
+                        error: errors.length > 0 ? errors : JSON.parse(data),
                         text: () => data,
                         json: () => JSON.parse(data),
                     });
@@ -204,7 +241,9 @@ class CloudScraper {
                         headers: headers,
                         error: errors,
                         text: () => (isBuffer ? "[binary buffer]" : data),
-                        json: () => (isBuffer ? undefined : JSON.parse(data)),
+                        json: () => isBuffer
+                            ? Buffer.from(base64Result, "base64").toJSON()
+                            : JSON.parse(data),
                         buffer: () => isBuffer
                             ? Buffer.from(base64Result, "base64")
                             : Buffer.from(data),

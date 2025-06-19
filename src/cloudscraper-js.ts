@@ -249,12 +249,13 @@ class CloudScraper {
           data = decode(data.substring(2).substring(0, data.length - 1));
         }
 
-        if (errors.length > 0) {
+        if (errors.length > 0 || statusCode >= 400) {
+          console.log(`errors: ${errors}`);
           reject({
             status: 500,
             statusText: "ERROR",
             headers: headers,
-            error: errors,
+            error: errors.length > 0 ? errors : JSON.parse(data),
             text: () => data,
             json: () => JSON.parse(data),
           });
@@ -265,7 +266,10 @@ class CloudScraper {
             headers: headers,
             error: errors,
             text: () => (isBuffer ? "[binary buffer]" : data),
-            json: () => (isBuffer ? undefined : JSON.parse(data)),
+            json: () =>
+              isBuffer
+                ? Buffer.from(base64Result, "base64").toJSON()
+                : JSON.parse(data),
             buffer: () =>
               isBuffer
                 ? Buffer.from(base64Result, "base64")
