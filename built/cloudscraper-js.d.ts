@@ -15,7 +15,55 @@ declare class CloudScraper {
     solveCaptcha3(url: string, key: string, anchorLink: string): Promise<string>;
     solveCaptcha3FromHTML(url: string, html: string, anchorLink: string): Promise<string>;
     setPython3(isPython3: boolean): void;
-    install(): Promise<unknown>;
+    install(): Promise<boolean>;
+    /**
+     * Installs Python and cloudscraper library automatically
+     * @returns Promise<boolean> - true if installation was successful
+     */
+    installDependencies(): Promise<boolean>;
+    /**
+     * Checks if Python is installed
+     * @returns Promise<string | null> - Python command or null if not found
+     */
+    private checkPythonInstallation;
+    /**
+     * Installs only the cloudscraper library
+     * @param pythonCommand - Python command (python or python3)
+     * @returns Promise<void>
+     */
+    private installCloudscraperLibrary;
+    /**
+     * Creates a virtual environment and installs cloudscraper
+     * @param pythonCommand - Python command
+     * @returns Promise<void>
+     */
+    private createVirtualEnvironment;
+    /**
+     * Installs Python and cloudscraper based on operating system
+     * @returns Promise<void>
+     */
+    private installPythonAndCloudscraper;
+    /**
+     * Installs Python on macOS
+     * @returns Promise<void>
+     */
+    private installPythonOnMac;
+    /**
+     * Installs Python via Homebrew
+     * @param resolve - Promise resolution function
+     * @param reject - Promise rejection function
+     */
+    private installPythonViaHomebrew;
+    /**
+     * Installs Python on Windows
+     * @returns Promise<void>
+     */
+    private installPythonOnWindows;
+    /**
+     * Installs Python on Linux
+     * @returns Promise<void>
+     */
+    private installPythonOnLinux;
 }
 type CloudScraperOptions = {
     timeoutInSeconds?: number;

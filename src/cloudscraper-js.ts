@@ -1,6 +1,7 @@
 import { load } from "cheerio";
-import { spawn } from "child_process";
+import { exec, spawn } from "child_process";
 import { decode } from "js-base64";
+import { platform } from "os";
 import { join } from "path";
 
 class CloudScraper {
@@ -20,6 +21,7 @@ class CloudScraper {
     this.setPython3 = this.setPython3.bind(this);
     this.solveCaptcha3 = this.solveCaptcha3.bind(this);
     this.solveCaptcha3FromHTML = this.solveCaptcha3FromHTML.bind(this);
+    this.installDependencies = this.installDependencies.bind(this);
   }
 
   // @param url: string options: Options = {}
@@ -353,45 +355,339 @@ class CloudScraper {
 
   // @param isPython3: boolean
   public async install() {
+    return this.installDependencies();
+  }
+
+  /**
+   * Installs Python and cloudscraper library automatically
+   * @returns Promise<boolean> - true if installation was successful
+   */
+  public async installDependencies(): Promise<boolean> {
     return new Promise((resolve, reject) => {
-      const args: string[] = [join(__dirname, "/cloudscraper/setup.py")];
-      args.push("install");
+      console.log("🔍 Checking Python dependencies...");
 
-      const requestArgs: string[] = [join(__dirname, "/req/setup.py")];
-      requestArgs.push("install");
+      // First check if Python is already installed
+      this.checkPythonInstallation()
+        .then((pythonCommand) => {
+          if (pythonCommand) {
+            console.log(`✓ Python found: ${pythonCommand}`);
+            // If Python is installed, just install cloudscraper
+            return this.installCloudscraperLibrary(pythonCommand);
+          } else {
+            console.log("❌ Python not found. Installing...");
+            return this.installPythonAndCloudscraper();
+          }
+        })
+        .then(() => {
+          console.log("✅ All dependencies installed successfully!");
+          resolve(true);
+        })
+        .catch((error) => {
+          console.error("❌ Installation error:", error.message);
+          reject(error);
+        });
+    });
+  }
 
-      const childProcess = spawn(
-        this.isPython3 ? "python3" : "python",
-        requestArgs
+  /**
+   * Checks if Python is installed
+   * @returns Promise<string | null> - Python command or null if not found
+   */
+  private async checkPythonInstallation(): Promise<string | null> {
+    return new Promise((resolve) => {
+      // Try python3 first
+      exec("python3 --version", (error, stdout) => {
+        if (!error) {
+          resolve("python3");
+          return;
+        }
+
+        // Try python
+        exec("python --version", (error, stdout) => {
+          if (!error) {
+            resolve("python");
+            return;
+          }
+
+          resolve(null);
+        });
+      });
+    });
+  }
+
+  /**
+   * Installs only the cloudscraper library
+   * @param pythonCommand - Python command (python or python3)
+   * @returns Promise<void>
+   */
+  private async installCloudscraperLibrary(
+    pythonCommand: string
+  ): Promise<void> {
+    return new Promise((resolve, reject) => {
+      console.log("📦 Installing cloudscraper library...");
+
+      const child = spawn(
+        pythonCommand,
+        ["-m", "pip", "install", "cloudscraper"],
+        {
+          stdio: "inherit",
+        }
       );
 
-      childProcess.stdout.setEncoding("utf8");
-      childProcess.stdout.on("data", (data) => {
-        console.log(data);
+      child.on("close", (code) => {
+        if (code === 0) {
+          console.log("✅ cloudscraper installed successfully!");
+          resolve();
+        } else {
+          console.log(
+            "⚠️  Global installation failed, trying with virtual environment..."
+          );
+          this.createVirtualEnvironment(pythonCommand)
+            .then(resolve)
+            .catch(reject);
+        }
       });
 
-      childProcess.stderr.setEncoding("utf8");
-      childProcess.stderr.on("data", (err) => {
-        reject(err);
+      child.on("error", (error) => {
+        console.log(
+          "⚠️  Error in global installation, trying with virtual environment..."
+        );
+        this.createVirtualEnvironment(pythonCommand)
+          .then(resolve)
+          .catch(reject);
+      });
+    });
+  }
+
+  /**
+   * Creates a virtual environment and installs cloudscraper
+   * @param pythonCommand - Python command
+   * @returns Promise<void>
+   */
+  private async createVirtualEnvironment(pythonCommand: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+      console.log("🔧 Creating virtual environment...");
+
+      const { join } = require("path");
+      const venvPath = join(process.cwd(), ".venv");
+
+      // Create virtual environment
+      const venvChild = spawn(pythonCommand, ["-m", "venv", venvPath], {
+        stdio: "inherit",
       });
 
-      childProcess.on("exit", () => {
-        const childProcess = spawn(this.isPython3 ? "python3" : "python", args);
+      venvChild.on("close", (code) => {
+        if (code === 0) {
+          // Install cloudscraper in virtual environment
+          const pipCommand =
+            platform() === "win32"
+              ? join(venvPath, "Scripts", "pip")
+              : join(venvPath, "bin", "pip");
 
-        childProcess.stdout.setEncoding("utf8");
-        childProcess.stdout.on("data", (data) => {
-          console.log(data);
-        });
+          const pipChild = spawn(pipCommand, ["install", "cloudscraper"], {
+            stdio: "inherit",
+          });
 
-        childProcess.stderr.setEncoding("utf8");
-        childProcess.stderr.on("data", (err) => {
-          reject(err);
-        });
+          pipChild.on("close", (pipCode) => {
+            if (pipCode === 0) {
+              console.log(
+                "✅ cloudscraper installed successfully in virtual environment!"
+              );
+              console.log(`📝 To activate the virtual environment manually:`);
+              if (platform() === "win32") {
+                console.log(`   ${venvPath}\\Scripts\\activate.bat`);
+              } else {
+                console.log(`   source ${venvPath}/bin/activate`);
+              }
+              resolve();
+            } else {
+              reject(
+                new Error(
+                  `Failed to install cloudscraper in virtual environment (code: ${pipCode})`
+                )
+              );
+            }
+          });
 
-        childProcess.on("exit", () => {
-          resolve(true);
-        });
+          pipChild.on("error", (error) => {
+            reject(error);
+          });
+        } else {
+          reject(
+            new Error(`Failed to create virtual environment (code: ${code})`)
+          );
+        }
       });
+
+      venvChild.on("error", (error) => {
+        reject(error);
+      });
+    });
+  }
+
+  /**
+   * Installs Python and cloudscraper based on operating system
+   * @returns Promise<void>
+   */
+  private async installPythonAndCloudscraper(): Promise<void> {
+    const osPlatform = platform();
+
+    if (osPlatform === "darwin") {
+      return this.installPythonOnMac();
+    } else if (osPlatform === "win32") {
+      return this.installPythonOnWindows();
+    } else if (osPlatform === "linux") {
+      return this.installPythonOnLinux();
+    } else {
+      throw new Error("Unsupported operating system");
+    }
+  }
+
+  /**
+   * Installs Python on macOS
+   * @returns Promise<void>
+   */
+  private async installPythonOnMac(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      console.log("🍎 Installing Python on macOS...");
+
+      // Check if Homebrew is installed
+      exec("which brew", (error) => {
+        if (error) {
+          console.log("📦 Installing Homebrew first...");
+          const homebrewInstall = spawn(
+            "/bin/bash",
+            [
+              "-c",
+              "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)",
+            ],
+            { stdio: "inherit" }
+          );
+
+          homebrewInstall.on("close", (code) => {
+            if (code === 0) {
+              this.installPythonViaHomebrew(resolve, reject);
+            } else {
+              reject(new Error("Failed to install Homebrew"));
+            }
+          });
+        } else {
+          this.installPythonViaHomebrew(resolve, reject);
+        }
+      });
+    });
+  }
+
+  /**
+   * Installs Python via Homebrew
+   * @param resolve - Promise resolution function
+   * @param reject - Promise rejection function
+   */
+  private installPythonViaHomebrew(
+    resolve: () => void,
+    reject: (error: Error) => void
+  ): void {
+    console.log("🐍 Installing Python via Homebrew...");
+
+    const brewInstall = spawn("brew", ["install", "python"], {
+      stdio: "inherit",
+    });
+
+    brewInstall.on("close", (code) => {
+      if (code === 0) {
+        this.installCloudscraperLibrary("python3").then(resolve).catch(reject);
+      } else {
+        reject(new Error("Failed to install Python via Homebrew"));
+      }
+    });
+  }
+
+  /**
+   * Installs Python on Windows
+   * @returns Promise<void>
+   */
+  private async installPythonOnWindows(): Promise<void> {
+    console.log("🪟 Manual installation required on Windows");
+    console.log(
+      "Please download and install Python from: https://www.python.org/downloads/"
+    );
+    console.log("Make sure to check 'Add Python to PATH' during installation.");
+    throw new Error("Manual Python installation required on Windows");
+  }
+
+  /**
+   * Installs Python on Linux
+   * @returns Promise<void>
+   */
+  private async installPythonOnLinux(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      console.log("🐧 Installing Python on Linux...");
+
+      const packageManagers = [
+        {
+          name: "apt",
+          install: [
+            "sudo",
+            "apt",
+            "update",
+            "&&",
+            "sudo",
+            "apt",
+            "install",
+            "-y",
+            "python3",
+            "python3-pip",
+          ],
+        },
+        {
+          name: "yum",
+          install: ["sudo", "yum", "install", "-y", "python3", "python3-pip"],
+        },
+        {
+          name: "dnf",
+          install: ["sudo", "dnf", "install", "-y", "python3", "python3-pip"],
+        },
+        {
+          name: "pacman",
+          install: ["sudo", "pacman", "-S", "python", "python-pip"],
+        },
+      ];
+
+      let installed = false;
+
+      const tryPackageManager = (index: number) => {
+        if (index >= packageManagers.length) {
+          reject(new Error("No supported package manager found"));
+          return;
+        }
+
+        const pm = packageManagers[index];
+
+        exec(`which ${pm.name}`, (error) => {
+          if (!error && !installed) {
+            installed = true;
+            console.log(`📦 Installing Python via ${pm.name}...`);
+
+            const installProcess = spawn(pm.install[0], pm.install.slice(1), {
+              stdio: "inherit",
+            });
+
+            installProcess.on("close", (code) => {
+              if (code === 0) {
+                this.installCloudscraperLibrary("python3")
+                  .then(resolve)
+                  .catch(reject);
+              } else {
+                reject(new Error(`Failed to install via ${pm.name}`));
+              }
+            });
+          } else {
+            tryPackageManager(index + 1);
+          }
+        });
+      };
+
+      tryPackageManager(0);
     });
   }
 }

@@ -1,8 +1,38 @@
 import argparse
 import json
+import os
+import sys
 from base64 import urlsafe_b64encode
+from pathlib import Path
 
-import cloudscraper
+
+# Check if a virtual environment exists and activate it
+def check_virtual_environment():
+    """Check if a virtual environment exists and add it to path if necessary"""
+    venv_path = Path.cwd() / ".venv"
+
+    if venv_path.exists():
+        # Add virtual environment to path
+        if os.name == "nt":  # Windows
+            site_packages = venv_path / "Lib" / "site-packages"
+        else:  # Unix/Linux/macOS
+            python_version = f"python{sys.version_info.major}.{sys.version_info.minor}"
+            site_packages = venv_path / "lib" / python_version / "site-packages"
+
+        if site_packages.exists():
+            sys.path.insert(0, str(site_packages))
+
+
+# Check and activate virtual environment before importing cloudscraper
+check_virtual_environment()
+
+try:
+    import cloudscraper
+except ImportError:
+    print("Error: cloudscraper not found. Please install it using:", file=sys.stderr)
+    print("  pip install cloudscraper", file=sys.stderr)
+    print("  or run: npm run install-deps", file=sys.stderr)
+    sys.exit(1)
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--url")
