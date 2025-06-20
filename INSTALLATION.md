@@ -1,33 +1,33 @@
-# Instalação Automática de Dependências
+# Automatic Dependencies Installation
 
-Este projeto agora inclui funcionalidades para instalar automaticamente o Python e a biblioteca `cloudscraper` necessários para o funcionamento.
+This project includes features to automatically install Python and the `cloudscraper` library required for operation.
 
-## Métodos de Instalação
+## Installation Methods
 
-### 1. Instalação Automática via npm
+### 1. Automatic Installation via npm
 
-Após instalar o pacote npm, as dependências Python serão instaladas automaticamente:
+After installing the npm package, Python dependencies will be installed automatically:
 
 ```bash
 npm install cloudscraper.js
 ```
 
-### 2. Scripts npm Disponíveis
+### 2. Available npm Scripts
 
 ```bash
-# Instala apenas as dependências Python
+# Install only Python dependencies
 npm run install-deps
 
-# Instala usando script Python
+# Install using Python script
 npm run install-python
 
-# Setup completo (build + instalação de dependências)
+# Complete setup (build + dependency installation)
 npm run setup
 ```
 
-### 3. Instalação Programática
+### 3. Programmatic Installation
 
-Você pode instalar as dependências programaticamente:
+You can install dependencies programmatically:
 
 ```javascript
 const CloudScraper = require("cloudscraper.js");
@@ -36,59 +36,86 @@ async function setup() {
   const cloudscraper = new CloudScraper();
 
   try {
-    // Instala Python e cloudscraper automaticamente
+    // Automatically install Python and cloudscraper
     await cloudscraper.installDependencies();
-    console.log("✅ Dependências instaladas com sucesso!");
+    console.log("✅ Dependencies installed successfully!");
   } catch (error) {
-    console.error("❌ Erro na instalação:", error.message);
+    console.error("❌ Installation error:", error.message);
   }
 }
 
 setup();
 ```
 
-## Sistemas Operacionais Suportados
+## Supported Operating Systems
 
 ### macOS
 
-- Instala Homebrew automaticamente se necessário
-- Instala Python via Homebrew
-- Instala cloudscraper via pip
+- Automatically installs Homebrew if necessary
+- Installs Python via Homebrew
+- Installs cloudscraper via pip
+- **Virtual environment support** when Python is externally managed
 
 ### Linux
 
-- Suporta múltiplos gerenciadores de pacotes:
+- Supports multiple package managers:
   - apt (Ubuntu/Debian)
   - yum (CentOS/RHEL)
   - dnf (Fedora)
   - pacman (Arch Linux)
-- Instala Python3 e pip
-- Instala cloudscraper via pip
+- Installs Python3 and pip
+- Installs cloudscraper via pip
+- **Virtual environment support** when necessary
 
 ### Windows
 
-- Requer instalação manual do Python
-- Fornece instruções para download
-- Instala cloudscraper via pip automaticamente
+- Requires manual Python installation
+- Provides download instructions
+- Automatically installs cloudscraper via pip
+- **Virtual environment support** when necessary
 
-## Verificação de Dependências
+## Virtual Environments
 
-O sistema verifica automaticamente:
+### Automatic Detection
 
-1. Se Python está instalado (python3 ou python)
-2. Se a biblioteca cloudscraper está disponível
-3. Instala apenas o que está faltando
+The system automatically detects when Python is in an externally managed environment (like on macOS with Homebrew) and creates a local virtual environment:
 
-## Logs de Instalação
+- **Virtual Environment**: `.venv/` in the project directory
+- **Automatic Detection**: The `index.py` script detects and uses the virtual environment automatically
+- **Safe Installation**: Avoids conflicts with system Python
 
-Durante a instalação, você verá logs detalhados:
+### Manual Virtual Environment Usage
 
-- ✅ Dependências encontradas
-- 🔍 Verificando instalações
-- 📦 Instalando componentes
-- ❌ Erros encontrados
+If you want to activate the virtual environment manually:
 
-## Exemplo Completo
+```bash
+# macOS/Linux
+source .venv/bin/activate
+
+# Windows
+.venv\Scripts\activate.bat
+```
+
+### Dependency Verification
+
+The system automatically verifies:
+
+1. If Python is installed (python3 or python)
+2. If the cloudscraper library is available
+3. If a virtual environment needs to be created
+4. Installs only what is missing
+
+## Installation Logs
+
+During installation, you will see detailed logs:
+
+- ✅ Dependencies found
+- 🔍 Checking installations
+- 📦 Installing components
+- 🔧 Creating virtual environment (when necessary)
+- ❌ Errors found
+
+## Complete Example
 
 ```javascript
 const CloudScraper = require("cloudscraper.js");
@@ -97,15 +124,15 @@ async function main() {
   const cloudscraper = new CloudScraper();
 
   try {
-    // Instala dependências se necessário
+    // Install dependencies if necessary
     await cloudscraper.installDependencies();
 
-    // Usa o cloudscraper normalmente
+    // Use cloudscraper normally
     const response = await cloudscraper.get("https://example.com");
     console.log("Status:", response.status);
-    console.log("Dados:", response.text());
+    console.log("Data:", response.text());
   } catch (error) {
-    console.error("Erro:", error.message);
+    console.error("Error:", error.message);
   }
 }
 
@@ -114,36 +141,50 @@ main();
 
 ## Troubleshooting
 
-### Erro: "Python não encontrado"
+### Error: "Python not found"
 
-- Execute `npm run install-deps` para instalação automática
-- Ou instale Python manualmente e execute `npm run install-python`
+- Run `npm run install-deps` for automatic installation
+- Or install Python manually and run `npm run install-python`
 
-### Erro: "Falha na instalação do cloudscraper"
+### Error: "externally-managed-environment"
 
-- Verifique se você tem permissões de administrador
-- Tente executar com `sudo` no Linux/macOS
-- Verifique sua conexão com a internet
+- **Automatic Solution**: The script will create a virtual environment automatically
+- **Manual Solution**: Run `python3 -m venv .venv && source .venv/bin/activate && pip install cloudscraper`
 
-### Erro no Windows
+### Error: "Failed to install cloudscraper"
 
-- Instale Python manualmente de https://www.python.org/downloads/
-- Marque "Add Python to PATH" durante a instalação
-- Execute `npm run install-python` após a instalação
+- Check if you have administrator permissions
+- Try running with `sudo` on Linux/macOS
+- Check your internet connection
+- The system will try to create a virtual environment automatically
 
-## Scripts Individuais
+### Error on Windows
+
+- Install Python manually from https://www.python.org/downloads/
+- Check "Add Python to PATH" during installation
+- Run `npm run install-python` after installation
+
+### Virtual Environment
+
+- **Location**: `.venv/` in the project directory
+- **Automatic Activation**: `index.py` detects and uses automatically
+- **Cleanup**: Delete the `.venv/` folder to remove the virtual environment
+
+## Individual Scripts
 
 ### scripts/install-dependencies.js
 
-Script Node.js completo para instalação automática de Python e cloudscraper.
+Complete Node.js script for automatic installation of Python and cloudscraper, with virtual environment support.
 
 ### scripts/install-python.py
 
-Script Python simples para instalar apenas a biblioteca cloudscraper.
+Simple Python script to install only the cloudscraper library, with virtual environment support.
 
-## Notas Importantes
+## Important Notes
 
-- A instalação automática requer permissões de administrador em alguns sistemas
-- No Windows, a instalação do Python deve ser feita manualmente
-- O script detecta automaticamente o sistema operacional e usa o método apropriado
-- As dependências são verificadas antes de cada instalação para evitar reinstalações desnecessárias
+- Automatic installation requires administrator permissions on some systems
+- On Windows, Python installation must be done manually
+- The script automatically detects the operating system and uses the appropriate method
+- Dependencies are verified before each installation to avoid unnecessary reinstalls
+- **Virtual environments are created automatically** when Python is externally managed
+- `index.py` detects and uses the virtual environment automatically

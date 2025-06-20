@@ -1,6 +1,6 @@
 # Changelog
 
-## [0.0.7] - 2024-12-19
+## [0.1.0] - 2025-06-20
 
 ### ✨ New Features
 
@@ -50,6 +50,8 @@
 - **INSTALLATION.md**: Complete installation guide with virtual environment section
 - **Examples**: `examples/auto-install-example.js`
 - **Tests**: `test-install.js` to verify functionalities
+- **Logs:** logs from installation now ignore python scripts outputs
+- **Responses:** Added stacktrace, error message and errors list on response to improve debugging
 
 ### 🎯 How to Use
 

@@ -251,13 +251,38 @@ class CloudScraper {
           data = decode(data.substring(2).substring(0, data.length - 1));
         }
 
+        const getError = () => {
+          let error;
+
+          error = errors?.at(-1)?.error || errors?.at(-1);
+
+          if (!error) {
+            try {
+              error = JSON.parse(data);
+            } catch (error) {
+              error = null;
+            }
+          }
+
+          return error;
+        };
+
         if (errors.length > 0 || statusCode >= 400) {
-          console.log(`errors: ${errors}`);
+          console.log(`errors: ${errors} \n statusCode: ${statusCode}`);
+          const error = getError();
           reject({
-            status: 500,
-            statusText: "ERROR",
+            status: statusCode >= 400 ? statusCode : 500,
+            statusText:
+              error?.error ||
+              error?.message ||
+              String(error) ||
+              "Unknown error",
             headers: headers,
-            error: errors.length > 0 ? errors : JSON.parse(data),
+            error: error,
+            stackTrace: errors
+              ?.map((error) => error.error || error)
+              .join("\n\n"),
+            errors: errors,
             text: () => data,
             json: () => JSON.parse(data),
           });
@@ -266,7 +291,8 @@ class CloudScraper {
             status: statusCode,
             statusText: "OK",
             headers: headers,
-            error: errors,
+            error: null,
+            errors: errors,
             text: () => (isBuffer ? "[binary buffer]" : data),
             json: () =>
               isBuffer
@@ -430,7 +456,7 @@ class CloudScraper {
         pythonCommand,
         ["-m", "pip", "install", "cloudscraper"],
         {
-          stdio: "inherit",
+          stdio: ["inherit", "inherit", "ignore"],
         }
       );
 
@@ -485,7 +511,7 @@ class CloudScraper {
               : join(venvPath, "bin", "pip");
 
           const pipChild = spawn(pipCommand, ["install", "cloudscraper"], {
-            stdio: "inherit",
+            stdio: ["ignore", "ignore", "inherit"],
           });
 
           pipChild.on("close", (pipCode) => {
@@ -493,12 +519,17 @@ class CloudScraper {
               console.log(
                 "✅ cloudscraper installed successfully in virtual environment!"
               );
-              console.log(`📝 To activate the virtual environment manually:`);
+              let activateCommand = "";
               if (platform() === "win32") {
-                console.log(`   ${venvPath}\\Scripts\\activate.bat`);
+                activateCommand = `${venvPath}\\Scripts\\activate.bat`;
               } else {
-                console.log(`   source ${venvPath}/bin/activate`);
+                activateCommand = `source ${venvPath}/bin/activate`;
               }
+
+              console.log(
+                `📝 To activate the virtual environment manually: run -> ${activateCommand}`
+              );
+
               resolve();
             } else {
               reject(
@@ -723,7 +754,9 @@ interface Response<T = Record<string, unknown>> {
   status: number;
   statusText: string;
   headers: string | Record<string, string>;
-  error: string[];
+  error: string | Record<string, unknown> | null;
+  errors: string[] | Record<string, unknown>[];
+  stackTrace?: string;
   text: () => string;
   json: () => T;
   buffer: () => Buffer;

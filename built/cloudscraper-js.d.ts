@@ -93,7 +93,9 @@ interface Response<T = Record<string, unknown>> {
     status: number;
     statusText: string;
     headers: string | Record<string, string>;
-    error: string[];
+    error: string | Record<string, unknown> | null;
+    errors: string[] | Record<string, unknown>[];
+    stackTrace?: string;
     text: () => string;
     json: () => T;
     buffer: () => Buffer;
