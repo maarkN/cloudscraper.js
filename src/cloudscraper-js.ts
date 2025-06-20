@@ -1,6 +1,7 @@
 import { load } from "cheerio";
 import { exec, spawn } from "child_process";
 import { decode } from "js-base64";
+import * as _ from "lodash";
 import { platform } from "os";
 import { join } from "path";
 
@@ -251,6 +252,44 @@ class CloudScraper {
           data = decode(data.substring(2).substring(0, data.length - 1));
         }
 
+        const getJSONData = () => {
+          if (isBuffer) {
+            const decoded = decode(
+              base64Result.substring(2).substring(0, base64Result.length - 1)
+            );
+
+            try {
+              const json = JSON.parse(decoded);
+              return json;
+            } catch (error) {
+              return `[binary buffer]`;
+            }
+          } else {
+            try {
+              const json = JSON.parse(data);
+              return json;
+            } catch (error) {
+              return data;
+            }
+          }
+        };
+
+        const checkIfIsBufferError = () => {
+          if (isBuffer) {
+            const decoded = decode(
+              base64Result.substring(2).substring(0, base64Result.length - 1)
+            );
+
+            try {
+              const json = JSON.parse(decoded);
+              return _.isPlainObject(json);
+            } catch (error) {
+              return false;
+            }
+          }
+          return false;
+        };
+
         const getError = () => {
           let error;
 
@@ -264,19 +303,22 @@ class CloudScraper {
             }
           }
 
+          if (!error && isBuffer) {
+            error = getJSONData();
+          }
+
           return error;
         };
 
-        if (errors.length > 0 || statusCode >= 400) {
-          console.log(`errors: ${errors} \n statusCode: ${statusCode}`);
+        const isBufferError = checkIfIsBufferError();
+        const hasErrors = errors.length > 0;
+        const isErrorResponse = statusCode >= 400;
+
+        if (hasErrors || isErrorResponse || isBufferError) {
           const error = getError();
           reject({
             status: statusCode >= 400 ? statusCode : 500,
-            statusText:
-              error?.error ||
-              error?.message ||
-              String(error) ||
-              "Unknown error",
+            statusText: error?.error || error?.message || "Unknown error",
             headers: headers,
             error: error,
             stackTrace: errors
@@ -284,7 +326,7 @@ class CloudScraper {
               .join("\n\n"),
             errors: errors,
             text: () => data,
-            json: () => JSON.parse(data),
+            json: () => getJSONData(),
           });
         } else {
           resolve({
@@ -294,10 +336,7 @@ class CloudScraper {
             error: null,
             errors: errors,
             text: () => (isBuffer ? "[binary buffer]" : data),
-            json: () =>
-              isBuffer
-                ? Buffer.from(base64Result, "base64").toJSON()
-                : JSON.parse(data),
+            json: () => getJSONData(),
             buffer: () =>
               isBuffer
                 ? Buffer.from(base64Result, "base64")

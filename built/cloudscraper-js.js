@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const cheerio_1 = require("cheerio");
 const child_process_1 = require("child_process");
 const js_base64_1 = require("js-base64");
+const _ = require("lodash");
 const os_1 = require("os");
 const path_1 = require("path");
 class CloudScraper {
@@ -189,6 +190,40 @@ class CloudScraper {
                 if (!isBuffer) {
                     data = (0, js_base64_1.decode)(data.substring(2).substring(0, data.length - 1));
                 }
+                const getJSONData = () => {
+                    if (isBuffer) {
+                        const decoded = (0, js_base64_1.decode)(base64Result.substring(2).substring(0, base64Result.length - 1));
+                        try {
+                            const json = JSON.parse(decoded);
+                            return json;
+                        }
+                        catch (error) {
+                            return `[binary buffer]`;
+                        }
+                    }
+                    else {
+                        try {
+                            const json = JSON.parse(data);
+                            return json;
+                        }
+                        catch (error) {
+                            return data;
+                        }
+                    }
+                };
+                const checkIfIsBufferError = () => {
+                    if (isBuffer) {
+                        const decoded = (0, js_base64_1.decode)(base64Result.substring(2).substring(0, base64Result.length - 1));
+                        try {
+                            const json = JSON.parse(decoded);
+                            return _.isPlainObject(json);
+                        }
+                        catch (error) {
+                            return false;
+                        }
+                    }
+                    return false;
+                };
                 const getError = () => {
                     let error;
                     error = errors?.at(-1)?.error || errors?.at(-1);
@@ -200,17 +235,19 @@ class CloudScraper {
                             error = null;
                         }
                     }
+                    if (!error && isBuffer) {
+                        error = getJSONData();
+                    }
                     return error;
                 };
-                if (errors.length > 0 || statusCode >= 400) {
-                    console.log(`errors: ${errors} \n statusCode: ${statusCode}`);
+                const isBufferError = checkIfIsBufferError();
+                const hasErrors = errors.length > 0;
+                const isErrorResponse = statusCode >= 400;
+                if (hasErrors || isErrorResponse || isBufferError) {
                     const error = getError();
                     reject({
                         status: statusCode >= 400 ? statusCode : 500,
-                        statusText: error?.error ||
-                            error?.message ||
-                            String(error) ||
-                            "Unknown error",
+                        statusText: error?.error || error?.message || "Unknown error",
                         headers: headers,
                         error: error,
                         stackTrace: errors
@@ -218,7 +255,7 @@ class CloudScraper {
                             .join("\n\n"),
                         errors: errors,
                         text: () => data,
-                        json: () => JSON.parse(data),
+                        json: () => getJSONData(),
                     });
                 }
                 else {
@@ -229,9 +266,7 @@ class CloudScraper {
                         error: null,
                         errors: errors,
                         text: () => (isBuffer ? "[binary buffer]" : data),
-                        json: () => isBuffer
-                            ? Buffer.from(base64Result, "base64").toJSON()
-                            : JSON.parse(data),
+                        json: () => getJSONData(),
                         buffer: () => isBuffer
                             ? Buffer.from(base64Result, "base64")
                             : Buffer.from(data),

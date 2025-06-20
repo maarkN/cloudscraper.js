@@ -1,6 +1,6 @@
 # Changelog
 
-## [0.1.0] - 2025-06-20
+## [0.1.1] - 2025-06-20
 
 ### ✨ New Features
 
@@ -49,9 +49,22 @@
 
 - **INSTALLATION.md**: Complete installation guide with virtual environment section
 - **Examples**: `examples/auto-install-example.js`
+
+### 🐛 Fixes
+
+- **Fix for externally managed Python environments** (error "externally-managed-environment")
+- **Automatic virtual environment support** when global installation fails
+- **Automatic virtual environment detection** in Python script
 - **Tests**: `test-install.js` to verify functionalities
 - **Logs:** logs from installation now ignore python scripts outputs
 - **Responses:** Added stacktrace, error message and errors list on response to improve debugging
+- **Improve stream responses:** identify if response stream is an object or JSON response and return error corectly
+
+### 📦 Dependencies
+
+- Maintained existing dependencies
+- Added installation scripts without extra dependencies
+- Support for native Python virtual environments
 
 ### 🎯 How to Use
 
@@ -86,15 +99,3 @@ async function main() {
   const response = await cloudscraper.get("https://example.com");
 }
 ```
-
-### 🐛 Fixes
-
-- **Fix for externally managed Python environments** (error "externally-managed-environment")
-- **Automatic virtual environment support** when global installation fails
-- **Automatic virtual environment detection** in Python script
-
-### 📦 Dependencies
-
-- Maintained existing dependencies
-- Added installation scripts without extra dependencies
-- Support for native Python virtual environments
