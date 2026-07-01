@@ -15,27 +15,34 @@ CloudScraper.js provides a seamless way to make HTTP requests to websites protec
 
 - **Automatic CloudFlare bypass**: Handles JavaScript challenges and CAPTCHAs
 - **Multi-platform support**: Works on macOS, Linux, and Windows
-- **Virtual environment support**: Automatic Python dependency management
-- **Easy installation**: One-command setup with automatic dependency installation
+- **Safe, explicit setup**: no privileged or automatic scripts run on `npm install`
+- **Optional install helper**: `npm run install-deps` sets up Python + a venv when you want it
 - **TypeScript support**: Full type definitions included
 - **Multiple HTTP methods**: GET, POST, COOKIE, and TOKENS support
 
 ## 📦 Installation
 
-This library requires both Python and Node.js. For detailed installation instructions, see [INSTALLATION.md](./INSTALLATION.md).
+This library requires **Node.js** and **Python 3** (with the `cloudscraper` package).
 
 ### Quick Start
 
 ```bash
 npm install cloudscraper.js
+# Install the Python side (opt-in — nothing privileged runs on `npm install`):
+pip install cloudscraper          # or: pip install --break-system-packages cloudscraper
 ```
 
-The installation process will automatically:
+> **Why opt-in?** Earlier versions auto-installed Python on `postinstall` (including `sudo` /
+> Homebrew / `curl | bash`). That was removed for safety — installing system packages is now an
+> explicit choice, which keeps the package usable in CI, Docker and locked-down environments.
+> If you'd like the guided helper (detects Python, creates a venv, installs `cloudscraper`), run:
+>
+> ```bash
+> npm run install-deps
+> ```
 
-- Check for Python installation
-- Install Python if needed (macOS/Linux)
-- Create virtual environment if required
-- Install the `cloudscraper` Python library
+If the `cloudscraper` Python package is missing at runtime, the library fails fast with a clear
+message telling you how to install it. See [INSTALLATION.md](./INSTALLATION.md) for details.
 
 ## 🔧 Usage
 
@@ -71,6 +78,32 @@ scraper
   .then((response) => {
     console.log(response.json());
   });
+```
+
+## 🏗️ Architecture
+
+Today the SDK spawns a short-lived Python process (running the `cloudscraper` library)
+**per request** and reads the result back over stdout:
+
+```mermaid
+flowchart LR
+  App[Node App] -->|new CloudScraper| SDK[cloudscraper.js]
+  SDK -->|spawn python per request| Py[(python + cloudscraper)]
+  Py -->|stdout| SDK
+  SDK --> App
+```
+
+**v0.2 (in progress)** replaces the per-request spawn with a **long-lived daemon** that keeps
+solved sessions hot (large speedup on repeated calls), a robust NDJSON IPC protocol, and
+first-class **AI-agent interfaces** (an MCP server + a LangChain tool):
+
+```mermaid
+flowchart TB
+  Agent[LLM Agent] -->|MCP| MCP[MCP Server]
+  Dev[Dev SDK] -->|createScraper| SDK[cloudscraper.js SDK]
+  MCP --> SDK
+  SDK <-->|NDJSON over socket| D[Python Daemon: hot session pool]
+  D -->|clean HTML / Markdown| SDK
 ```
 
 ## 🛠️ Development Status

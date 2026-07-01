@@ -10,12 +10,11 @@
     "clean": "rm -rf built && tsc --build --clean",
     "install-deps": "node scripts/install-dependencies.js",
     "install-python": "python3 scripts/install-python.py",
-    "postinstall": "npm run install-deps",
     "setup": "npm run build && npm run install-deps"
   },
   "repository": {
     "type": "git",
-    "url": "git+ithub.com/maarkN/cloudscraper.js.git"
+    "url": "git+https://github.com/maarkN/cloudscraper.js.git"
   },
   "keywords": [
     "cloudflare",
