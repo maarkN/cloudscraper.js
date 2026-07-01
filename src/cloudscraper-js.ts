@@ -767,26 +767,26 @@ type CloudScraperOptions = {
   usePython3?: boolean;
 };
 
+type HttpMethod =
+  | "GET"
+  | "POST"
+  | "PUT"
+  | "DELETE"
+  | "PATCH"
+  | "HEAD"
+  | "COOKIE"
+  | "TOKENS";
+
+/** @deprecated Use {@link HttpMethod} instead. Kept as an alias for backward compatibility. */
+type Method = HttpMethod;
+
 type Options = {
-  method?: Method["GET"] | Method["POST"] | Method["COOKIE"] | Method["TOKENS"];
+  method?: HttpMethod;
   headers?: { [key: string]: string };
   body?: string;
   redirect?: boolean;
   buffer?: boolean;
   timeoutInSeconds?: number;
-};
-
-type Method = {
-  GET: string;
-  POST: string;
-  COOKIE: string;
-  TOKENS: string;
-
-  // THE FOLLOWING ARE UNSUPPORTED TEMPORARILY
-  PUT: string;
-  DELETE: string;
-  PATCH: string;
-  HEAD: string;
 };
 
 interface Response<T = Record<string, unknown>> {
@@ -807,4 +807,4 @@ interface Request {
 }
 
 export default CloudScraper;
-export type { Method, Options, Request, Response };
+export type { HttpMethod, Method, Options, Request, Response };
