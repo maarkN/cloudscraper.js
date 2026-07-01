@@ -1,6 +1,7 @@
 import { randomUUID } from "crypto";
 import type { HttpMethod } from "./cloudscraper-js";
 import { DaemonClient, sharedDaemon } from "./daemon-client";
+import { htmlToMarkdown } from "./markdown";
 
 export interface CreateScraperOptions {
   usePython3?: boolean;
@@ -14,6 +15,8 @@ export interface CreateScraperOptions {
   timeoutMs?: number;
   /** Default headers merged into every request. */
   headers?: Record<string, string>;
+  /** Default output format. "markdown" is friendlier for LLMs. Default "html". */
+  format?: "html" | "markdown";
   /** Inject a custom daemon (used by tests). Defaults to the shared daemon. */
   daemon?: DaemonClient;
 }
@@ -23,6 +26,8 @@ export interface ScraperRequestOptions {
   body?: string | Record<string, unknown>;
   redirect?: boolean;
   timeoutMs?: number;
+  /** Override the scraper's default output format for this request. */
+  format?: "html" | "markdown";
 }
 
 export interface ScraperError {
@@ -101,10 +106,13 @@ function decodeBody(bodyB64: string | undefined): string {
   return Buffer.from(bodyB64, "base64").toString("utf8");
 }
 
-function buildOkResponse(msg: any): ScraperResponse<any> {
+function buildOkResponse(msg: any, format: "html" | "markdown"): ScraperResponse<any> {
   let cached: string | undefined;
   const text = () => {
-    if (cached === undefined) cached = decodeBody(msg.bodyB64);
+    if (cached === undefined) {
+      const html = decodeBody(msg.bodyB64);
+      cached = format === "markdown" ? htmlToMarkdown(html) : html;
+    }
     return cached;
   };
   const status: number = msg.status ?? 0;
@@ -160,6 +168,7 @@ export async function createScraper(options: CreateScraperOptions = {}): Promise
   ): Promise<ScraperResponse<any>> {
     await limiter.wait(hostOf(url));
     const timeoutMs = opts?.timeoutMs ?? defaultTimeout;
+    const fmt = opts?.format ?? options.format ?? "html";
 
     let last: any = null;
     for (let attempt = 0; attempt <= retries; attempt++) {
@@ -183,7 +192,7 @@ export async function createScraper(options: CreateScraperOptions = {}): Promise
           error: { code: "DAEMON_ERROR", message: err.message },
         }));
 
-      if (msg.ok) return buildOkResponse(msg);
+      if (msg.ok) return buildOkResponse(msg, fmt);
 
       last = msg;
       if (attempt < retries && isRetryable(msg)) {

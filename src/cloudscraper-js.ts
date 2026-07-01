@@ -820,3 +820,18 @@ export type {
   ScraperResponse,
   ScraperError,
 } from "./scraper";
+
+// v0.2 — Agent support (EPIC-2): MCP server, agent tools, markdown, schemas.
+export { createMcpServer, startStdioMcpServer } from "./mcp/server";
+export type { McpServerOptions } from "./mcp/server";
+export { fetchProtectedUrl, getCookies, solveChallenge } from "./mcp/tools";
+export type { FetchInput, ToolResult } from "./mcp/tools";
+export { htmlToMarkdown } from "./markdown";
+export {
+  functionSchemas,
+  fetchProtectedUrlSchema,
+  getCookiesSchema,
+  solveChallengeSchema,
+} from "./schemas";
+export type { FunctionSchema } from "./schemas";
+export { createCloudScraperTool } from "./integrations/langchain";

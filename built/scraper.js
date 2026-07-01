@@ -1,8 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createScraper = void 0;
+exports.createScraper = createScraper;
 const crypto_1 = require("crypto");
 const daemon_client_1 = require("./daemon-client");
+const markdown_1 = require("./markdown");
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 /** Per-host minimum spacing between requests (serialized via a promise chain). */
 class RateLimiter {
@@ -44,11 +45,13 @@ function decodeBody(bodyB64) {
         return "";
     return Buffer.from(bodyB64, "base64").toString("utf8");
 }
-function buildOkResponse(msg) {
+function buildOkResponse(msg, format) {
     let cached;
     const text = () => {
-        if (cached === undefined)
-            cached = decodeBody(msg.bodyB64);
+        if (cached === undefined) {
+            const html = decodeBody(msg.bodyB64);
+            cached = format === "markdown" ? (0, markdown_1.htmlToMarkdown)(html) : html;
+        }
         return cached;
     };
     const status = msg.status ?? 0;
@@ -97,6 +100,7 @@ async function createScraper(options = {}) {
     async function request(method, url, opts) {
         await limiter.wait(hostOf(url));
         const timeoutMs = opts?.timeoutMs ?? defaultTimeout;
+        const fmt = opts?.format ?? options.format ?? "html";
         let last = null;
         for (let attempt = 0; attempt <= retries; attempt++) {
             const msg = await daemon
@@ -116,7 +120,7 @@ async function createScraper(options = {}) {
                 error: { code: "DAEMON_ERROR", message: err.message },
             }));
             if (msg.ok)
-                return buildOkResponse(msg);
+                return buildOkResponse(msg, fmt);
             last = msg;
             if (attempt < retries && isRetryable(msg)) {
                 await sleep(Math.min(2000 * 2 ** attempt, 8000));
@@ -147,5 +151,4 @@ async function createScraper(options = {}) {
         },
     };
 }
-exports.createScraper = createScraper;
 //# sourceMappingURL=scraper.js.map

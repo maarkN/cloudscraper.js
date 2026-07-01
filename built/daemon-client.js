@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.sharedDaemon = exports.DaemonClient = void 0;
+exports.DaemonClient = void 0;
+exports.sharedDaemon = sharedDaemon;
 const child_process_1 = require("child_process");
 const path_1 = require("path");
 const ndjson_1 = require("./ndjson");
@@ -155,5 +156,4 @@ function sharedDaemon(opts) {
     }
     return shared;
 }
-exports.sharedDaemon = sharedDaemon;
 //# sourceMappingURL=daemon-client.js.map

@@ -1,4 +1,3 @@
-/// <reference types="node" />
 declare class CloudScraper {
     private isPython3;
     private timeoutInSeconds;
@@ -102,3 +101,11 @@ export type { HttpMethod, Method, Options, Request, Response };
 export { createScraper } from "./scraper";
 export { DaemonClient } from "./daemon-client";
 export type { Scraper, CreateScraperOptions, ScraperRequestOptions, ScraperResponse, ScraperError, } from "./scraper";
+export { createMcpServer, startStdioMcpServer } from "./mcp/server";
+export type { McpServerOptions } from "./mcp/server";
+export { fetchProtectedUrl, getCookies, solveChallenge } from "./mcp/tools";
+export type { FetchInput, ToolResult } from "./mcp/tools";
+export { htmlToMarkdown } from "./markdown";
+export { functionSchemas, fetchProtectedUrlSchema, getCookiesSchema, solveChallengeSchema, } from "./schemas";
+export type { FunctionSchema } from "./schemas";
+export { createCloudScraperTool } from "./integrations/langchain";

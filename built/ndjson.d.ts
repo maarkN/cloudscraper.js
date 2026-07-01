@@ -1,4 +1,3 @@
-/// <reference types="node" />
 /**
  * NDJSON (newline-delimited JSON) helpers.
  *
