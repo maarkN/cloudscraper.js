@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.NdjsonDecoder = exports.encode = void 0;
+exports.NdjsonDecoder = void 0;
+exports.encode = encode;
 /**
  * NDJSON (newline-delimited JSON) helpers.
  *
@@ -15,7 +16,6 @@ exports.NdjsonDecoder = exports.encode = void 0;
 function encode(obj) {
     return JSON.stringify(obj) + "\n";
 }
-exports.encode = encode;
 class NdjsonDecoder {
     constructor(onMessage, onParseError) {
         this.onMessage = onMessage;

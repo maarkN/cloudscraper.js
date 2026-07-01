@@ -101,6 +101,37 @@ Supports `get/post/put/delete/patch/head/cookies/tokens`, plus `proxy`, `retries
 `rateLimitPerHost` and `timeoutMs`. Requires Python 3 + `pip install cloudscraper`.
 This API is new in v0.2 and evolving.
 
+## 🤖 Use it from an AI agent (v0.2)
+
+Three ways for LLM agents to read anti-bot–protected pages, returning clean **markdown** by default.
+
+**MCP server** — point any MCP client (Claude Desktop, IDEs) at the `cloudscraper-mcp` binary:
+
+```json
+{ "mcpServers": { "cloudscraper": { "command": "npx", "args": ["-y", "-p", "cloudscraper.js", "cloudscraper-mcp"] } } }
+```
+
+Tools: `fetch_protected_url`, `get_cookies`, `solve_challenge`.
+
+**LangChain / LangGraph** (optional peer `@langchain/core`):
+
+```ts
+import { createScraper, createCloudScraperTool } from "cloudscraper.js";
+const tool = await createCloudScraperTool(await createScraper({ format: "markdown" }));
+// bind `tool` to your agent / graph
+```
+
+**Function calling** (OpenAI / Anthropic) — hand `functionSchemas` to the model, run the handler:
+
+```ts
+import { createScraper, fetchProtectedUrl, functionSchemas } from "cloudscraper.js";
+const scraper = await createScraper();
+const { text } = await fetchProtectedUrl(scraper, { url, format: "markdown" });
+```
+
+> The MCP server dynamically loads the ESM MCP SDK, so it needs **Node ≥ 22.12** plus Python 3 +
+> `pip install cloudscraper`. See [`examples/`](./examples/).
+
 ## 🏗️ Architecture
 
 Today the SDK spawns a short-lived Python process (running the `cloudscraper` library)

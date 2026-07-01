@@ -6,7 +6,9 @@
     "sourceMap": true,
     "module": "CommonJS",
     "resolveJsonModule": true,
-    "declaration": true
+    "declaration": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true
   },
   "include": ["./src/**/*"]
 }

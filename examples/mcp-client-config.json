@@ -1,0 +1,10 @@
+{
+  "//": "Drop this into your MCP client (e.g. Claude Desktop) to expose cloudscraper as tools.",
+  "//requirements": "Node >= 22.12, Python 3 with `pip install cloudscraper`.",
+  "mcpServers": {
+    "cloudscraper": {
+      "command": "npx",
+      "args": ["-y", "-p", "cloudscraper.js", "cloudscraper-mcp"]
+    }
+  }
+}

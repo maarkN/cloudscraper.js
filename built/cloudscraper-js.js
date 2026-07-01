@@ -1,10 +1,43 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.DaemonClient = exports.createScraper = void 0;
+exports.createCloudScraperTool = exports.solveChallengeSchema = exports.getCookiesSchema = exports.fetchProtectedUrlSchema = exports.functionSchemas = exports.htmlToMarkdown = exports.solveChallenge = exports.getCookies = exports.fetchProtectedUrl = exports.startStdioMcpServer = exports.createMcpServer = exports.DaemonClient = exports.createScraper = void 0;
 const cheerio_1 = require("cheerio");
 const child_process_1 = require("child_process");
 const js_base64_1 = require("js-base64");
-const _ = require("lodash");
+const _ = __importStar(require("lodash"));
 const os_1 = require("os");
 const path_1 = require("path");
 class CloudScraper {
@@ -617,4 +650,21 @@ var scraper_1 = require("./scraper");
 Object.defineProperty(exports, "createScraper", { enumerable: true, get: function () { return scraper_1.createScraper; } });
 var daemon_client_1 = require("./daemon-client");
 Object.defineProperty(exports, "DaemonClient", { enumerable: true, get: function () { return daemon_client_1.DaemonClient; } });
+// v0.2 — Agent support (EPIC-2): MCP server, agent tools, markdown, schemas.
+var server_1 = require("./mcp/server");
+Object.defineProperty(exports, "createMcpServer", { enumerable: true, get: function () { return server_1.createMcpServer; } });
+Object.defineProperty(exports, "startStdioMcpServer", { enumerable: true, get: function () { return server_1.startStdioMcpServer; } });
+var tools_1 = require("./mcp/tools");
+Object.defineProperty(exports, "fetchProtectedUrl", { enumerable: true, get: function () { return tools_1.fetchProtectedUrl; } });
+Object.defineProperty(exports, "getCookies", { enumerable: true, get: function () { return tools_1.getCookies; } });
+Object.defineProperty(exports, "solveChallenge", { enumerable: true, get: function () { return tools_1.solveChallenge; } });
+var markdown_1 = require("./markdown");
+Object.defineProperty(exports, "htmlToMarkdown", { enumerable: true, get: function () { return markdown_1.htmlToMarkdown; } });
+var schemas_1 = require("./schemas");
+Object.defineProperty(exports, "functionSchemas", { enumerable: true, get: function () { return schemas_1.functionSchemas; } });
+Object.defineProperty(exports, "fetchProtectedUrlSchema", { enumerable: true, get: function () { return schemas_1.fetchProtectedUrlSchema; } });
+Object.defineProperty(exports, "getCookiesSchema", { enumerable: true, get: function () { return schemas_1.getCookiesSchema; } });
+Object.defineProperty(exports, "solveChallengeSchema", { enumerable: true, get: function () { return schemas_1.solveChallengeSchema; } });
+var langchain_1 = require("./integrations/langchain");
+Object.defineProperty(exports, "createCloudScraperTool", { enumerable: true, get: function () { return langchain_1.createCloudScraperTool; } });
 //# sourceMappingURL=cloudscraper-js.js.map

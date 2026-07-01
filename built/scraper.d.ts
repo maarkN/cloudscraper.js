@@ -11,6 +11,8 @@ export interface CreateScraperOptions {
     timeoutMs?: number;
     /** Default headers merged into every request. */
     headers?: Record<string, string>;
+    /** Default output format. "markdown" is friendlier for LLMs. Default "html". */
+    format?: "html" | "markdown";
     /** Inject a custom daemon (used by tests). Defaults to the shared daemon. */
     daemon?: DaemonClient;
 }
@@ -19,6 +21,8 @@ export interface ScraperRequestOptions {
     body?: string | Record<string, unknown>;
     redirect?: boolean;
     timeoutMs?: number;
+    /** Override the scraper's default output format for this request. */
+    format?: "html" | "markdown";
 }
 export interface ScraperError {
     code: string;
