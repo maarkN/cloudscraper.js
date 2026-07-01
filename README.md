@@ -1,5 +1,9 @@
 # CloudScraper.js
 
+[![ci](https://github.com/maarkN/cloudscraper.js/actions/workflows/ci.yml/badge.svg)](https://github.com/maarkN/cloudscraper.js/actions/workflows/ci.yml)
+![node](https://img.shields.io/badge/node-%E2%89%A520-brightgreen)
+![license](https://img.shields.io/badge/license-ISC-blue)
+
 A Node.js wrapper for Python-based CloudFlare bypass functionality. This library is a JavaScript port of the popular `cloudscraper` Python library, designed to help developers bypass CloudFlare protection mechanisms in their Node.js applications.
 
 ## 🎯 Purpose
