@@ -1,7 +1,7 @@
 {
   "name": "cloudscraper.js",
   "description": "Python based CloudFlare bypass. Utilizes [VeNoMouS's CloudScraper](https://github.com/VeNoMouS/cloudscraper) project to bypass CloudFlare. All credit goes to him.",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "main": "./built/cloudscraper-js.js",
   "bin": {
     "cloudscraper-mcp": "./built/mcp/bin.js"
@@ -10,6 +10,8 @@
     "test": "node test.js",
     "pretest:unit": "npm run build",
     "test:unit": "node --test tests/*.test.js",
+    "pretest:cov": "npm run build",
+    "test:cov": "node --test --experimental-test-coverage tests/*.test.js",
     "build": "rm -rf built && npm run build:ts",
     "build:ts": "tsc --build",
     "clean": "rm -rf built && tsc --build --clean",

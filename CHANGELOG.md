@@ -1,5 +1,46 @@
 # Changelog
 
+## [0.2.0] - 2026-07-01
+
+Agent-ready release: cloudscraper.js can now be driven by AI agents, keeps solved
+sessions hot, and is safe to install in CI/Docker.
+
+### ✨ New Features
+
+- **Reusable hot sessions** via `createScraper()` backed by a long-lived Python
+  daemon (`daemon.py`) — repeated requests skip re-solving the challenge.
+- **AI-agent interfaces** (closes #1): an MCP server (`cloudscraper-mcp`) exposing
+  `fetch_protected_url`, `get_cookies`, `solve_challenge`; a LangChain
+  `DynamicStructuredTool` (`createCloudScraperTool`); and function-calling JSON
+  Schemas (`functionSchemas`).
+- **HTML → Markdown** output (`format: "markdown"`, `htmlToMarkdown`).
+- Full HTTP methods on the new SDK (GET/POST/PUT/DELETE/PATCH/HEAD) plus
+  `cookies()` / `tokens()`, with per-session `proxy`, `retries` (backoff),
+  `rateLimitPerHost` and `timeoutMs`.
+
+### 🔒 Security
+
+- **Removed the privileged `postinstall`** (no more `sudo` / Homebrew /
+  `curl | bash` on `npm install`). Python setup is now opt-in
+  (`npm run install-deps`), making the package safe for CI/Docker/serverless.
+
+### 🔧 Technical
+
+- Robust **NDJSON IPC** replacing the fragile positional stdout parsing.
+- `HttpMethod` is now a proper string-literal union; fixed the malformed
+  `repository.url`.
+- Upgraded TypeScript to 5.x (required by zod v4); enabled `skipLibCheck`.
+
+### 🧪 Quality
+
+- Offline unit tests (`node --test`) for IPC, daemon client, scraper, tools,
+  schemas and MCP wiring — 22 tests, ~84% line coverage (`npm run test:unit`).
+- GitHub Actions CI (Node 22/24) and Architecture Decision Records (`docs/adr/`).
+
+### 📚 Docs
+
+- README architecture + agent usage; `docs/API.md`; agent examples in `examples/`.
+
 ## [0.1.1] - 2025-06-20
 
 ### ✨ New Features
