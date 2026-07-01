@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.DaemonClient = exports.createScraper = void 0;
 const cheerio_1 = require("cheerio");
 const child_process_1 = require("child_process");
 const js_base64_1 = require("js-base64");
@@ -610,4 +611,10 @@ class CloudScraper {
     }
 }
 exports.default = CloudScraper;
+// v0.2 — Agent-ready daemon API (EPIC-1). Prefer this over `new CloudScraper()`
+// for repeated requests: it keeps solved sessions hot in a long-lived daemon.
+var scraper_1 = require("./scraper");
+Object.defineProperty(exports, "createScraper", { enumerable: true, get: function () { return scraper_1.createScraper; } });
+var daemon_client_1 = require("./daemon-client");
+Object.defineProperty(exports, "DaemonClient", { enumerable: true, get: function () { return daemon_client_1.DaemonClient; } });
 //# sourceMappingURL=cloudscraper-js.js.map

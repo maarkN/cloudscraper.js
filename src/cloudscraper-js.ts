@@ -808,3 +808,15 @@ interface Request {
 
 export default CloudScraper;
 export type { HttpMethod, Method, Options, Request, Response };
+
+// v0.2 — Agent-ready daemon API (EPIC-1). Prefer this over `new CloudScraper()`
+// for repeated requests: it keeps solved sessions hot in a long-lived daemon.
+export { createScraper } from "./scraper";
+export { DaemonClient } from "./daemon-client";
+export type {
+  Scraper,
+  CreateScraperOptions,
+  ScraperRequestOptions,
+  ScraperResponse,
+  ScraperError,
+} from "./scraper";
