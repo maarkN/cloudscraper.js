@@ -80,6 +80,27 @@ scraper
   });
 ```
 
+### Faster: reusable hot sessions (v0.2, experimental)
+
+`createScraper()` talks to a long-lived daemon that keeps the solved Cloudflare
+session **hot**, so repeated requests skip re-solving the challenge:
+
+```ts
+import { createScraper } from "cloudscraper.js";
+
+const scraper = await createScraper({ retries: 3, rateLimitPerHost: 1 });
+
+const first = await scraper.get("https://www.irishjobs.ie/");     // solves once
+const again = await scraper.get("https://www.irishjobs.ie/jobs"); // reuses session (fast)
+
+console.log(first.status, again.status);
+await scraper.close();
+```
+
+Supports `get/post/put/delete/patch/head/cookies/tokens`, plus `proxy`, `retries`,
+`rateLimitPerHost` and `timeoutMs`. Requires Python 3 + `pip install cloudscraper`.
+This API is new in v0.2 and evolving.
+
 ## 🏗️ Architecture
 
 Today the SDK spawns a short-lived Python process (running the `cloudscraper` library)
