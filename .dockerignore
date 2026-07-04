@@ -1,0 +1,21 @@
+# Build context hygiene — keep only what the Dockerfile actually COPYs.
+node_modules
+built
+.git
+.github
+.venv
+.docs
+docs
+tests
+examples
+scripts
+test.js
+*.log
+.DS_Store
+npm-debug.log*
+CHANGELOG.md
+README.md
+INSTALLATION.md
+Dockerfile
+.dockerignore
+.gitignore
