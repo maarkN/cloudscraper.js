@@ -48,6 +48,16 @@ pip install cloudscraper          # or: pip install --break-system-packages clou
 If the `cloudscraper` Python package is missing at runtime, the library fails fast with a clear
 message telling you how to install it. See [INSTALLATION.md](./INSTALLATION.md) for details.
 
+### 🐳 Docker
+
+Prefer a container with Node **and** Python + `cloudscraper` already wired up? The repo ships a
+multi-stage [`Dockerfile`](./Dockerfile):
+
+```bash
+docker build -t cloudscraper-js .
+docker run -i --rm cloudscraper-js          # boots the MCP server on stdio
+```
+
 ## 🔧 Usage
 
 ```javascript
